@@ -73,5 +73,21 @@ A base de dados foi estruturada de forma tabular para leitura rápida e precisa 
 
 ---
 
+## 📊 Estrutura da Planilha (Google Sheets)
+
+Para testar este fluxo no seu próprio ambiente n8n, crie uma planilha no Google Sheets chamada **`Catalogo_Smart_Store_AI`** com uma aba chamada **`Produtos`** seguindo exatamente esta estrutura de colunas:
+
+| Produto | Categoria | Preço | Estoque |
+| :--- | :--- | :--- | :--- |
+| Base Líquida Matte | Rosto | 59.90 | 15 |
+| Batom Velvet Vermelho | Lábios | 34.90 | 8 |
+| Máscara de Cílios Volume | Olhos | 42.00 | 0 |
+| Paleta de Sombras Nude | Olhos | 79.90 | 5 |
+| Pincel para Pó Facial | Acessórios | 29.90 | 12 |
+
+> **Nota:** O agente utiliza a coluna **Estoque** para validar a disponibilidade em tempo real (`Estoque > 0` para confirmar venda e `Estoque = 0` para sugerir alternativas disponíveis).
+
+---
+
 ## 👩‍💻 Autora
 Desenvolvido por **Vitória** — Estudante de Análise de Dados, Automação e Inteligência Artificial.
