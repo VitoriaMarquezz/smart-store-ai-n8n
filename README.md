@@ -24,7 +24,7 @@ O **Smart Store AI** atua como uma camada inteligente entre a base de dados da l
 
 ## 🏗️ Arquitetura e Stack Tecnológica
 
-![Arquitetura do Fluxo no n8n](assets/arquitetura-n8n.png)
+![Arquitetura do Fluxo no n8n](arquitetura-n8n.png)
 
 * **Orquestração & Automação:** n8n Cloud
 * **LLM (Processamento de Linguagem Natural):** Google Gemini API (`gemini-2.5-flash-lite` — escolhido pela baixa latência em tempo real)
@@ -51,7 +51,7 @@ A base de dados foi estruturada de forma tabular para leitura rápida e precisa 
 | `preco` | Decimal | Valor unitário atualizado |
 | `quantidade_estoque` | Inteiro | Saldo físico disponível em tempo real |
 
-![Estrutura da Base de Dados](assets/base-dados-sheets.png)
+![Estrutura da Base de Dados](base-dados-sheets.png)
 
 ---
 
@@ -60,7 +60,7 @@ A base de dados foi estruturada de forma tabular para leitura rápida e precisa 
 * **Teste de Atualização Dinâmica (0 → 10):** Alteração manual do estoque de um item (*Base Matte*) de `0` para `10` unidades na planilha durante a conversa, validando que o bot reflete a mudança imediatamente na pergunta seguinte sem necessidade de reiniciar o fluxo.
 * **Teste de Contorno (Estoque Zerado):** Solicitação de item esgotado (*Máscara de Cílios*), validando a recomendação automática de produtos substitutos disponíveis.
 
-![Demonstração no Telegram](assets/teste-telegram.png)
+![Demonstração no Telegram](teste-telegram.png)
 
 ---
 
