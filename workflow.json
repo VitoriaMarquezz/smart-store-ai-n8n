@@ -1,0 +1,224 @@
+{
+  "name": "Smart Store AI — Agente de Atendimento e Catálogo",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.message.text }}",
+        "options": {
+          "systemMessage": "Você é a assistente virtual da Smart Store AI, uma loja de maquiagem e acessórios.\nSeu objetivo é atender os clientes de forma educada, simpática, clara e objetiva, em português do Brasil.\n\nFERRAMENTA OBRIGATÓRIA:\nVocê tem acesso a uma ferramenta que consulta o catálogo oficial da loja no Google Sheets.\nSEMPRE que o cliente perguntar sobre produtos, preços, categorias, disponibilidade ou pedir sugestões, você DEVE consultar essa ferramenta antes de responder.\n\nREGRAS ESTRITAS:\n1. Baseie suas respostas EXCLUSIVAMENTE nos dados retornados pela ferramenta do catálogo. Nunca invente produtos, preços, promoções ou quantidades em estoque.\n2. Se o cliente perguntar por um produto com estoque maior que zero (`Estoque > 0`), informe o preço (em Reais, R$) e a disponibilidade.\n3. Se o cliente perguntar por um produto com estoque igual a zero (`Estoque = 0`), informe educadamente que está esgotado no momento e sugira alternativas disponíveis na mesma categoria ou em outras categorias do catálogo.\n4. Se o cliente pedir algo que não existe na planilha, diga claramente que não trabalhamos com esse item no momento e liste os produtos que temos disponíveis.\n5. Escreva as respostas em texto simples, sem usar formatação Markdown, asteriscos (**) ou hashtags (#)."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        256,
+        16
+      ],
+      "id": "5eafb414-514f-464d-9646-1455b4759cf9",
+      "name": "2. Cérebro: Agente Smart Store AI"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-3.5-flash-lite",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.2,
+      "position": [
+        -48,
+        288
+      ],
+      "id": "d9f0d399-38dd-4873-98e5-902e712c47c7",
+      "name": "LLM: Google Gemini (Gratuito)",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "zFT4JT9ntg8VX8g2",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Telegram Trigger').item.json.message.chat.id }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [
+        160,
+        272
+      ],
+      "id": "e88a4386-7bd4-4241-a754-de6566665847",
+      "name": "Memória: Contexto da Conversa"
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Consulta o catálogo oficial da Smart Store AI no Google Sheets. Retorna todos os produtos, categorias, preços e quantidades em estoque atualizados. Use esta ferramenta sempre que o cliente perguntar sobre produtos, preços, disponibilidade ou sugestões de itens.",
+        "documentId": {
+          "__rl": true,
+          "value": "1ZLoZM5QBgk71pETzcEjzqkzr185bRByHT0X16Bu9k4Y",
+          "mode": "list",
+          "cachedResultName": "Catalogo_Smart_Store_AI",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ZLoZM5QBgk71pETzcEjzqkzr185bRByHT0X16Bu9k4Y/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Produtos",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ZLoZM5QBgk71pETzcEjzqkzr185bRByHT0X16Bu9k4Y/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        368,
+        256
+      ],
+      "id": "726e0900-a9c1-4e63-9012-a12ee9cf3e40",
+      "name": "Tool: Consultar Catálogo (Sheets)",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "fMRrqJMU3iKhwZp6",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## 🛍️ SMART STORE AI — Arquitetura do Agente\n\n**Objetivo:** Assistente virtual que atende clientes pelo Telegram e consulta produtos, preços e estoque direto de uma planilha.\n**Stack:** n8n Cloud + Telegram + Google Gemini API (Free Tier) + Google Sheets (base de dados)\n\n**Fluxo de funcionamento:**\n1. **Entrada:** o cliente envia uma mensagem ao bot no Telegram. O Telegram Trigger recebe o texto (`message.text`) e o ID do chat.\n2. **Raciocínio e memória:** o AI Agent (Gemini) interpreta a intenção e mantém o contexto das últimas 5 mensagens. Cada cliente tem a sua conversa, separada pelo ID do chat.\n3. **Consulta dinâmica (Tool):** o Agent consulta o Google Sheets para responder com preços e estoque atuais, sem inventar dados.\n4. **Resposta:** o nó \"Send a text message\" devolve a resposta ao cliente no Telegram.\n\n**Limitação conhecida:** o plano gratuito do Gemini tem cota diária baixa de requisições.",
+        "height": 256,
+        "width": 1024
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1120,
+        0
+      ],
+      "typeVersion": 1,
+      "id": "ace2a983-a9ff-4db4-a39f-ec7e0f134876",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.5,
+      "position": [
+        -16,
+        16
+      ],
+      "id": "669bee13-1656-42d7-b449-2f17b2c86aae",
+      "name": "Telegram Trigger",
+      "webhookId": "a849d03f-78a1-4a84-a218-79801735b62a",
+      "credentials": {
+        "telegramApi": {
+          "id": "uymP501Vr6jHUiTR",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "={{ $json.output }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        592,
+        16
+      ],
+      "id": "f61130a7-cd57-4e37-b53a-a50a6114bb2a",
+      "name": "Send a text message",
+      "webhookId": "85c57315-c6c0-4f27-9639-0db48161b6e6",
+      "credentials": {
+        "telegramApi": {
+          "id": "uymP501Vr6jHUiTR",
+          "name": "Telegram account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "LLM: Google Gemini (Gratuito)": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "2. Cérebro: Agente Smart Store AI",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Memória: Contexto da Conversa": {
+      "ai_memory": [
+        [
+          {
+            "node": "2. Cérebro: Agente Smart Store AI",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tool: Consultar Catálogo (Sheets)": {
+      "ai_tool": [
+        [
+          {
+            "node": "2. Cérebro: Agente Smart Store AI",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "2. Cérebro: Agente Smart Store AI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "2. Cérebro: Agente Smart Store AI": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "1a8d438c-01f4-4ab0-9bcb-409fc72032e1",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c0a881f0fa644ae4b1d752154e368fbbd0ac2b77d3944bd279adf81594ed8857"
+  },
+  "nodeGroups": [],
+  "id": "j9UjY3S7VhfqONnV",
+  "tags": []
+}
